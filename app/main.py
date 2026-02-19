@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 
+from app.core.logging import configure_logging
 from app.routers.health import router as health_router
 from app.routers.agents import router as agents_router
+
+configure_logging()
 
 app = FastAPI(
     title="Vera Agent",

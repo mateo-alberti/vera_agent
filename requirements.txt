@@ -4,3 +4,5 @@ langchain
 langchain-openai
 openai
 python-dotenv
+openmeteo-requests
+requests
