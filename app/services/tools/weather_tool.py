@@ -21,6 +21,15 @@ def get_current_weather_from_api(
     """Fetch current weather from Open-Meteo for given coordinates."""
     base_url = Settings().openmeteo_base_url
     logger = logging.getLogger("vera.weather_tool")
+    logger.info(
+        "tool_start tool=%s latitude=%s longitude=%s temperature_unit=%s wind_speed_unit=%s timezone=%s",
+        "get_current_weather",
+        latitude,
+        longitude,
+        temperature_unit,
+        wind_speed_unit,
+        timezone,
+    )
 
     session = requests.Session()
     client = openmeteo_requests.Client(session=session)

@@ -7,7 +7,7 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from app.services.tools import get_current_weather_tool
+from app.services.tools import get_current_weather_tool, get_stock_price_tool
 
 
 @dataclass
@@ -20,7 +20,7 @@ class VeraAgent:
         logger = logging.getLogger("vera.agent")
         logger.info("agent_start name=%s input=%s", self.name, user_message)
 
-        tools = [get_current_weather_tool()]
+        tools = [get_current_weather_tool(), get_stock_price_tool()]
 
         prompt = ChatPromptTemplate.from_messages(
             [
