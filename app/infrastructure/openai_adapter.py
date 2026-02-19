@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
-from openai import OpenAI
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from app.core.config import Settings
 from app.domain.ports import AnswerPort, AnswerResult, EmbeddingsPort, EmbeddingResult
@@ -11,27 +13,24 @@ from app.domain.ports import AnswerPort, AnswerResult, EmbeddingsPort, Embedding
 class OpenAIAdapter(AnswerPort, EmbeddingsPort):
     def __init__(self, settings: Optional[Settings] = None) -> None:
         self.settings = settings or Settings()
-        self.client = OpenAI(api_key=self.settings.openai_api_key)
+        self.llm = ChatOpenAI(
+            model=self.settings.openai_answer_model,
+            api_key=self.settings.openai_api_key,
+        )
+        self.embeddings = OpenAIEmbeddings(
+            model=self.settings.openai_embedding_model,
+            api_key=self.settings.openai_api_key,
+        )
 
     def generate_answer(self, prompt: str, *, system: Optional[str] = None) -> AnswerResult:
-        input_items = []
-        if system:
-            input_items.append({"role": "system", "content": system})
-        input_items.append({"role": "user", "content": prompt})
-
-        response = self.client.responses.create(
-            model=self.settings.openai_answer_model,
-            input=input_items,
+        system_message = system or "You are a helpful assistant."
+        template = ChatPromptTemplate.from_messages(
+            [("system", system_message), ("user", "{input}")]
         )
-
-        return AnswerResult(text=response.output_text, raw=response)
+        chain = template | self.llm | StrOutputParser()
+        text = chain.invoke({"input": prompt})
+        return AnswerResult(text=text, raw=text)
 
     def embed_texts(self, texts: Sequence[str]) -> EmbeddingResult:
-        response = self.client.embeddings.create(
-            model=self.settings.openai_embedding_model,
-            input=list(texts),
-            encoding_format="float",
-        )
-
-        vectors = [item.embedding for item in response.data]
-        return EmbeddingResult(vectors=vectors, raw=response)
+        vectors = self.embeddings.embed_documents(list(texts))
+        return EmbeddingResult(vectors=vectors, raw=vectors)
