@@ -8,3 +8,4 @@ openai
 python-dotenv
 openmeteo-requests
 requests
+pytest
