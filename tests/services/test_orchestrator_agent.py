@@ -5,7 +5,7 @@ def test_orchestrator_appends_sources_line(monkeypatch):
     captured = {}
 
     class DummyAgent:
-        def invoke(self, payload):
+        def invoke(self, payload, config=None):
             captured["messages"] = payload["messages"]
             return {
                 "messages": [

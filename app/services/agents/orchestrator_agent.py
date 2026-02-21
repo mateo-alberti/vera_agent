@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from langchain.agents import create_agent
 from app.prompts import ORCHESTRATOR_SYSTEM_PROMPT
+from app.core.observability import build_langsmith_config
 from app.services.agents.market_weather_agent import get_market_weather_agent_tool
 from app.services.agents.vera_agent import get_vera_agent_tool
 from app.services.agents.shared.context_memory import (
@@ -48,9 +49,15 @@ class OrchestratorAgent:
         context_text = _format_context(history)
         tools = [
             get_market_weather_agent_tool(
-                self.llm, default_context=context_text
+                self.llm,
+                conversation_id=conversation_id,
+                default_context=context_text,
             ),
-            get_vera_agent_tool(self.llm, default_context=context_text),
+            get_vera_agent_tool(
+                self.llm,
+                conversation_id=conversation_id,
+                default_context=context_text,
+            ),
         ]
 
         agent = create_agent(
@@ -60,7 +67,14 @@ class OrchestratorAgent:
             name=self.name,
         )
         messages = history + [{"role": "user", "content": user_message}]
-        result = agent.invoke({"messages": messages})
+        trace_config = build_langsmith_config(
+            tags=("app:vera-agent", f"agent:{self.name}", "scope:orchestrator"),
+            metadata={
+                "conversation_id": conversation_id,
+                "scoped_conversation_id": router_conversation_id,
+            },
+        )
+        result = agent.invoke({"messages": messages}, trace_config)
         result_messages = result.get("messages", []) if isinstance(result, dict) else []
         assistant_message = extract_last_ai_message(result_messages) or ""
         output = assistant_message

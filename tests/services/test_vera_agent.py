@@ -7,7 +7,7 @@ def test_vera_agent_appends_sources_line(monkeypatch):
     monkeypatch.setattr(vera_agent, "get_knowledge_base_tool", lambda: "kb")
 
     class DummyAgent:
-        def invoke(self, payload):
+        def invoke(self, payload, config=None):
             captured["messages"] = payload["messages"]
             return {
                 "messages": [
@@ -34,7 +34,7 @@ def test_vera_agent_without_sources_line(monkeypatch):
     monkeypatch.setattr(vera_agent, "get_knowledge_base_tool", lambda: "kb")
 
     class DummyAgent:
-        def invoke(self, payload):
+        def invoke(self, payload, config=None):
             return {"messages": [{"role": "assistant", "content": "answer"}]}
 
     monkeypatch.setattr(vera_agent, "create_agent", lambda **kwargs: DummyAgent())

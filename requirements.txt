@@ -8,6 +8,7 @@ langchain-chroma==1.1.0
 langchain-postgres==0.0.16
 langchain-text-splitters==1.1.0
 langchain-google-genai==3.0.0
+langsmith
 chromadb
 pypdf
 openai

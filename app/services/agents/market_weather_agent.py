@@ -8,6 +8,7 @@ from uuid import uuid4
 from langchain.agents import create_agent
 from langchain_core.tools import StructuredTool
 
+from app.core.observability import build_langsmith_config
 from app.prompts import MARKET_WEATHER_SYSTEM_PROMPT
 from app.services.agents.shared.context_memory import (
     extract_last_ai_message,
@@ -50,7 +51,11 @@ class MarketWeatherAgent:
         if context:
             messages.append({"role": "system", "content": f"Context:\n{context}"})
         messages.append({"role": "user", "content": user_message})
-        result = agent.invoke({"messages": messages})
+        trace_config = build_langsmith_config(
+            tags=("app:vera-agent", f"agent:{self.name}", "scope:tool"),
+            metadata={"conversation_id": conversation_id},
+        )
+        result = agent.invoke({"messages": messages}, trace_config)
         result_messages = result.get("messages", []) if isinstance(result, dict) else []
         assistant_message = extract_last_ai_message(result_messages) or ""
         output = assistant_message

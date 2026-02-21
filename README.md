@@ -7,7 +7,7 @@ Vera Agent is an AI agent with tool-calling capabilities, generated based on an 
 ## Architecture
 Key architectural choices:
 - **FastAPI API layer:** `app/main.py` exposes the HTTP surface and wires routers, keeping I/O at the edges.
-- **Agent orchestration in services:** `VeraAgent` composes tools and uses LangChain’s tool-calling agent to decide when to call them.
+- **Agent orchestration in services:** `OrchestratorAgent` (`app/services/agents/orchestrator_agent.py`) routes requests to specialized agents (`market_weather_agent.py`, `vera_agent.py`). Each specialist uses LangChain’s tool-calling agent for its tools.
 - **Ports and adapters:** `app/domain/ports.py` defines interfaces; `app/infrastructure/` provides concrete adapters (OpenAI + Chroma), making swaps easier.
 - **Vector store with persistence:** Chroma runs in persistent mode and stores embeddings under `data/chroma` by default.
 - **Config via env + dotenv:** `app/core/config.py` loads settings from `.env` or environment variables.
@@ -17,6 +17,7 @@ Key architectural choices:
   - `app/main.py`: FastAPI app wiring.
   - `app/routers/`: HTTP endpoints (`/health`, `/agents/answer`).
   - `app/services/`: agent orchestration and tools.
+    - `app/services/agents/`: agent implementations (`orchestrator_agent.py`, `market_weather_agent.py`, `vera_agent.py`).
   - `app/infrastructure/`: adapters for OpenAI and Chroma.
   - `app/domain/`: ports (interfaces) and data contracts.
   - `app/core/`: config + logging.
@@ -97,6 +98,17 @@ Example request/response:
 Notes:
 - Memory lives only in RAM (resets on restart) and is per-process.
 - The current memory window is 6 turns.
+
+## LangSmith observability
+This project supports LangSmith tracing through LangChain. To enable it, set these
+environment variables (in `.env` or your shell):
+- `LANGSMITH_TRACING=true`
+- `LANGSMITH_API_KEY=your_key_here`
+- `LANGSMITH_PROJECT=vera-agent` (optional, groups runs by project)
+- `LANGSMITH_ENDPOINT=your_self_hosted_endpoint` (optional, for self-hosted or custom endpoint)
+
+Traces are tagged with `app:vera-agent` and `agent:<name>` and include
+`conversation_id` metadata to make filtering easier.
 
 ## Clarifications
 1. The exercise specifies a weather tool that accepts a city name. I used an API that works with latitude and longitude instead. The agent can still be asked for the weather in a city, but it will resolve that to coordinates and pass latitude/longitude to the tool for a precise location.
