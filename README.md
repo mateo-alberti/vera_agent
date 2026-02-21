@@ -1,8 +1,10 @@
-# Vera Agent
-Vera Agent is an AI agent with tool-calling capabilities, generated based on an exercise proposed by the Vera Money engineering team. It can:
+# Vera exercise AI Application
+Vera AI Application is an AI app with variuos agents and tool-calling capabilities, generated based on an exercise proposed by the Vera Money engineering team. It can:
 - Answer general questions using an LLM.
+- Selects which agent should answer each question.
 - Call tools for current weather and stock prices.
 - Search an internal knowledge base via semantic similarity (Chroma DB).
+- Keep short-term conversation memory when a `conversation_id` is passed to the `/agents/answer` endpoint.
 
 ## Architecture
 Key architectural choices:
@@ -38,7 +40,7 @@ docker run --rm -p 8000:8000 \
   -e OPENAI_API_KEY=your_key_here \
   -e ALPHAVANTAGE_API_KEY=your_key_here \
   -e CHROMA_PERSIST_DIR=/data/chroma \
-  -v vera_chroma:/data/chroma \
+  -v "$(pwd)/data/chroma:/data/chroma" \
   vera-agent
 ```
 
