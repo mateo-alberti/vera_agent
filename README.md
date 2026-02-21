@@ -50,3 +50,32 @@ python scripts/ingest_file.py \
 ```
 
 After ingestion, the knowledge base tool will retrieve chunks from Chroma and attach a `Sources:` line to agent responses when available.
+
+## Conversation memory
+The `/agents/answer` endpoint supports short-term, in-memory conversation history.
+- Request includes `message` and an optional `conversation_id`.
+- If `conversation_id` is omitted or blank, the API generates one and returns it with the answer.
+- Subsequent requests with the same `conversation_id` reuse a short rolling memory window.
+
+Example request/response:
+```json
+// POST /agents/answer
+{
+  "message": "I need AAPL stock price",
+  "conversation_id": "optional"
+}
+```
+
+```json
+{
+  "answer": "And google's?",
+  "conversation_id": "generated_if_missing"
+}
+```
+
+Notes:
+- Memory lives only in RAM (resets on restart) and is per-process.
+- The current memory window is 6 turns.
+
+## Clarifications
+1. The exercise specifies a weather tool that accepts a city name. I used an API that works with latitude and longitude instead. The agent can still be asked for the weather in a city, but it will resolve that to coordinates and pass latitude/longitude to the tool for a precise location.
