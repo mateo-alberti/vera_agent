@@ -9,6 +9,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from app.core.config import Settings
 from app.domain.embeddings_port import EmbeddingResult, EmbeddingsPort
 from app.domain.llm_port import AnswerResult, LLMPort
+from app.prompts import DEFAULT_SYSTEM_PROMPT
 
 
 class OpenAIAdapter(LLMPort, EmbeddingsPort):
@@ -24,7 +25,7 @@ class OpenAIAdapter(LLMPort, EmbeddingsPort):
         )
 
     def generate_answer(self, prompt: str, *, system: Optional[str] = None) -> AnswerResult:
-        system_message = system or "You are a helpful assistant."
+        system_message = system or DEFAULT_SYSTEM_PROMPT
         template = ChatPromptTemplate.from_messages(
             [("system", system_message), ("user", "{input}")]
         )

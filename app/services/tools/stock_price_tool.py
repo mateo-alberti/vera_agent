@@ -7,6 +7,7 @@ import requests
 from langchain_core.tools import StructuredTool
 
 from app.core.config import Settings
+from app.prompts import STOCK_PRICE_TOOL_DESCRIPTION
 
 
 def get_stock_price_from_api(
@@ -70,5 +71,5 @@ def get_stock_price_tool() -> StructuredTool:
     return StructuredTool.from_function(
         func=get_stock_price_from_api,
         name="get_stock_price",
-        description="Get the latest stock price quote for a symbol via Alpha Vantage.",
+        description=STOCK_PRICE_TOOL_DESCRIPTION,
     )

@@ -10,6 +10,7 @@ from app.domain.vector_store_port import (
     VectorStorePort,
     get_vector_store_port,
 )
+from app.prompts import KNOWLEDGE_BASE_TOOL_DESCRIPTION
 
 
 def knowledge_base_search(
@@ -52,8 +53,5 @@ def get_knowledge_base_tool() -> StructuredTool:
     return StructuredTool.from_function(
         func=knowledge_base_search,
         name="knowledge_base_search",
-        description=(
-            "Search the internal knowledge base about Vera, Vera terms and conditions and fintech regulations using semantic similarity. "
-            "Provide a short query and optional k for number of results."
-        ),
+        description=KNOWLEDGE_BASE_TOOL_DESCRIPTION,
     )

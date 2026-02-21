@@ -8,6 +8,7 @@ import requests
 from langchain_core.tools import StructuredTool
 
 from app.core.config import Settings
+from app.prompts import CURRENT_WEATHER_TOOL_DESCRIPTION
 
 
 def get_current_weather_from_api(
@@ -69,8 +70,5 @@ def get_current_weather_tool(
     return StructuredTool.from_function(
         func=get_current_weather_from_api,
         name="get_current_weather",
-        description=(
-            "Get current weather for a latitude/longitude. "
-            "Use when the user asks about weather."
-        ),
+        description=CURRENT_WEATHER_TOOL_DESCRIPTION,
     )

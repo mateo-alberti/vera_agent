@@ -7,6 +7,7 @@ from typing import Any
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
 
+from app.prompts import VERA_SYSTEM_PROMPT
 from app.services.tools import (
     get_current_weather_tool,
     get_knowledge_base_tool,
@@ -17,7 +18,7 @@ from app.services.tools import (
 @dataclass
 class VeraAgent:
     llm: Any
-    system_prompt: str = "You are Vera, a concise and helpful assistant."
+    system_prompt: str = VERA_SYSTEM_PROMPT
     name: str = "vera"
 
     def respond(self, user_message: str) -> str:
