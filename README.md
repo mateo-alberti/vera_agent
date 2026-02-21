@@ -28,6 +28,20 @@ Key architectural choices:
 - `assets/`: static assets (if any).
 - `tests/`: test suite.
 
+## Run locally (without Docker)
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Start the API:
+```bash
+uvicorn app.main:app --reload
+```
+
+3. Open Swagger UI:
+- `http://127.0.0.1:8000/docs`
+
 ## Docker
 Build the image:
 ```bash
