@@ -7,7 +7,11 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from app.services.tools import get_current_weather_tool, get_stock_price_tool
+from app.services.tools import (
+    get_current_weather_tool,
+    get_knowledge_base_tool,
+    get_stock_price_tool,
+)
 
 
 @dataclass
@@ -20,7 +24,11 @@ class VeraAgent:
         logger = logging.getLogger("vera.agent")
         logger.info("agent_start name=%s input=%s", self.name, user_message)
 
-        tools = [get_current_weather_tool(), get_stock_price_tool()]
+        tools = [
+            get_current_weather_tool(),
+            get_stock_price_tool(),
+            get_knowledge_base_tool(),
+        ]
 
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -31,6 +39,20 @@ class VeraAgent:
         )
 
         agent = create_tool_calling_agent(self.llm, tools, prompt)
-        executor = AgentExecutor(agent=agent, tools=tools)
+        executor = AgentExecutor(agent=agent, tools=tools, return_intermediate_steps=True)
         result = executor.invoke({"input": user_message})
-        return result["output"]
+        output = result["output"]
+
+        sources_line = ""
+        for step in result.get("intermediate_steps", []):
+            if not step or len(step) < 2:
+                continue
+            _, observation = step
+            if isinstance(observation, dict) and observation.get("sources_line"):
+                sources_line = observation["sources_line"]
+                break
+
+        if sources_line:
+            output = f"{output}\n\n{sources_line}"
+
+        return output
