@@ -21,7 +21,7 @@ def test_generate_answer_service_uses_agent(monkeypatch):
     monkeypatch.setattr(
         generate_answer_service, "get_llm_port", lambda: DummyLLMPort()
     )
-    monkeypatch.setattr(generate_answer_service, "VeraAgent", DummyAgent)
+    monkeypatch.setattr(generate_answer_service, "OrchestratorAgent", DummyAgent)
 
     service = generate_answer_service.GenerateAnswerService()
     result, conversation_id = service.respond("hello", conversation_id="cid-1")

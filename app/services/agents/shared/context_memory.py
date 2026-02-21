@@ -75,3 +75,23 @@ def extract_last_ai_message(messages: list[Any]) -> str:
                 return content
             return str(content)
     return ""
+
+
+def split_sources_line(text: Any) -> tuple[str, str]:
+    if text is None:
+        return "", ""
+    if not isinstance(text, str):
+        text = str(text)
+    if not text:
+        return "", ""
+    stripped = text.rstrip()
+    if not stripped:
+        return text, ""
+    lines = stripped.splitlines()
+    if not lines:
+        return text, ""
+    last_line = lines[-1].strip()
+    if not last_line.startswith("Sources:"):
+        return text, ""
+    answer = "\n".join(lines[:-1]).rstrip()
+    return answer, last_line
