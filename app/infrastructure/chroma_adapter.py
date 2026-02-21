@@ -8,11 +8,11 @@ from typing import List, Sequence
 import chromadb
 
 from app.core.config import Settings
-from app.domain.ports import VectorEmbeddingItem, VectorSearchMatch, VectorStorePort
+from app.domain.vector_store_port import VectorEmbeddingItem, VectorSearchMatch, VectorStorePort
 
 
 @dataclass
-class ChromaVectorStore(VectorStorePort):
+class ChromaAdapter(VectorStorePort):
     def __init__(self) -> None:
         settings = Settings()
         os.makedirs(settings.chroma_persist_dir, exist_ok=True)
@@ -75,6 +75,3 @@ class ChromaVectorStore(VectorStorePort):
         self._logger.info("vector_search k=%s count=%s", k, len(matches))
         return matches
 
-
-def get_chroma_vector_store() -> VectorStorePort:
-    return ChromaVectorStore()

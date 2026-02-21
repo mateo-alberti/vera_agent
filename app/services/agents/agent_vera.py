@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+from typing import Any
 
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
 
 from app.services.tools import (
     get_current_weather_tool,
@@ -16,7 +16,7 @@ from app.services.tools import (
 
 @dataclass
 class VeraAgent:
-    llm: ChatOpenAI
+    llm: Any
     system_prompt: str = "You are Vera, a concise and helpful assistant."
     name: str = "vera"
 

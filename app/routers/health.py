@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.infrastructure.openai_adapter import OpenAIAdapter
+from app.domain.llm_port import get_llm_port
 
 router = APIRouter(prefix="/health", tags=["health"])
 
@@ -10,17 +10,19 @@ def health_check() -> dict:
     return {"status": "healthy"}
 
 
-@router.get("/openai")
-def openai_health_check() -> dict:
-    adapter = OpenAIAdapter()
+@router.get("/llm")
+def llm_health_check() -> dict:
+    llm_port = get_llm_port()
     try:
-        result = adapter.generate_answer("ping", system="health check")
-    except Exception as exc:  # noqa: BLE001
-        return {"status": "error", "provider": "openai", "error": str(exc)}
+        result = llm_port.generate_answer("ping", system="health check")
+    except Exception as exc:
+        return {"status": "error", "error": str(exc)}
+
+    chat_model = llm_port.get_chat_model()
+    model = getattr(chat_model, "model", None) or getattr(chat_model, "model_name", None)
 
     return {
         "status": "ok",
-        "provider": "openai",
-        "model": adapter.settings.openai_answer_model,
+        "model": model,
         "sample": result.text,
     }

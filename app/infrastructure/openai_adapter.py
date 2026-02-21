@@ -7,10 +7,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from app.core.config import Settings
-from app.domain.ports import AnswerPort, AnswerResult, EmbeddingsPort, EmbeddingResult
+from app.domain.embeddings_port import EmbeddingResult, EmbeddingsPort
+from app.domain.llm_port import AnswerResult, LLMPort
 
 
-class OpenAIAdapter(AnswerPort, EmbeddingsPort):
+class OpenAIAdapter(LLMPort, EmbeddingsPort):
     def __init__(self, settings: Optional[Settings] = None) -> None:
         self.settings = settings or Settings()
         self.llm = ChatOpenAI(
@@ -34,3 +35,6 @@ class OpenAIAdapter(AnswerPort, EmbeddingsPort):
     def embed_texts(self, texts: Sequence[str]) -> EmbeddingResult:
         vectors = self.embeddings.embed_documents(list(texts))
         return EmbeddingResult(vectors=vectors, raw=vectors)
+
+    def get_chat_model(self) -> object:
+        return self.llm

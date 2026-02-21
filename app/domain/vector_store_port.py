@@ -1,29 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, Optional, Protocol, Sequence
-
-
-@dataclass(frozen=True)
-class AnswerResult:
-    text: str
-    raw: object
-
-
-@dataclass(frozen=True)
-class EmbeddingResult:
-    vectors: List[List[float]]
-    raw: object
-
-
-class AnswerPort(Protocol):
-    def generate_answer(self, prompt: str, *, system: Optional[str] = None) -> AnswerResult:
-        ...
-
-
-class EmbeddingsPort(Protocol):
-    def embed_texts(self, texts: Sequence[str]) -> EmbeddingResult:
-        ...
+from typing import Any, List, Protocol, Sequence
 
 
 @dataclass(frozen=True)
@@ -50,3 +28,9 @@ class VectorStorePort(Protocol):
         self, query_embedding: Sequence[float], k: int = 5
     ) -> List[VectorSearchMatch]:
         ...
+
+
+def get_vector_store_port() -> VectorStorePort:
+    from app.infrastructure.chroma_adapter import ChromaAdapter
+
+    return ChromaAdapter()

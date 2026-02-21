@@ -1,4 +1,5 @@
-from app.domain.ports import EmbeddingResult, VectorSearchMatch
+from app.domain.embeddings_port import EmbeddingResult
+from app.domain.vector_store_port import VectorSearchMatch
 from app.services.tools import knowledge_base_tool
 
 
@@ -31,8 +32,8 @@ def test_knowledge_base_search_collects_sources(monkeypatch):
             ]
 
     store = DummyStore()
-    monkeypatch.setattr(knowledge_base_tool, "OpenAIAdapter", DummyAdapter)
-    monkeypatch.setattr(knowledge_base_tool, "get_chroma_vector_store", lambda: store)
+    monkeypatch.setattr(knowledge_base_tool, "get_embeddings_port", lambda: DummyAdapter())
+    monkeypatch.setattr(knowledge_base_tool, "get_vector_store_port", lambda: store)
 
     result = knowledge_base_tool.knowledge_base_search("pricing")
 

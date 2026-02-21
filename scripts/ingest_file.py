@@ -11,9 +11,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from app.domain.ports import VectorEmbeddingItem
-from app.infrastructure.chroma_vector_store import get_chroma_vector_store
-from app.infrastructure.openai_adapter import OpenAIAdapter
+from app.domain.embeddings_port import get_embeddings_port
+from app.domain.vector_store_port import VectorEmbeddingItem, get_vector_store_port
 
 
 @dataclass(frozen=True)
@@ -68,8 +67,8 @@ def build_items(
     if not paragraphs_list:
         return []
 
-    adapter = OpenAIAdapter()
-    embeddings = adapter.embed_texts(paragraphs_list).vectors
+    embeddings_port = get_embeddings_port()
+    embeddings = embeddings_port.embed_texts(paragraphs_list).vectors
 
     items: List[VectorEmbeddingItem] = []
     for idx, paragraph in enumerate(paragraphs_list, start=1):
@@ -101,7 +100,7 @@ def ingest_file(args: IngestArgs) -> int:
     if not items:
         return 0
 
-    store = get_chroma_vector_store()
+    store = get_vector_store_port()
     return store.upsert_embeddings(items)
 
 

@@ -4,19 +4,22 @@ from typing import Any
 
 from langchain_core.tools import StructuredTool
 
-from app.infrastructure.openai_adapter import OpenAIAdapter
-from app.domain.ports import VectorSearchMatch, VectorStorePort
-from app.infrastructure.chroma_vector_store import get_chroma_vector_store
+from app.domain.embeddings_port import get_embeddings_port
+from app.domain.vector_store_port import (
+    VectorSearchMatch,
+    VectorStorePort,
+    get_vector_store_port,
+)
 
 
 def knowledge_base_search(
     query: str,
     k: int = 5,
 ) -> dict[str, Any]:
-    """Search the Chroma vector store for semantically similar text."""
-    adapter = OpenAIAdapter()
-    embedding_result = adapter.embed_texts([query])
-    store: VectorStorePort = get_chroma_vector_store()
+    """Search the vector store for semantically similar text."""
+    embeddings_port = get_embeddings_port()
+    embedding_result = embeddings_port.embed_texts([query])
+    store: VectorStorePort = get_vector_store_port()
     results: list[VectorSearchMatch] = store.search_by_embedding(
         query_embedding=embedding_result.vectors[0],
         k=k,

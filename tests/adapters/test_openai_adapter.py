@@ -1,5 +1,5 @@
 from app.infrastructure import openai_adapter
-from app.domain.ports import EmbeddingResult
+from app.domain.embeddings_port import EmbeddingResult
 
 
 def test_openai_adapter_generate_answer(monkeypatch):
