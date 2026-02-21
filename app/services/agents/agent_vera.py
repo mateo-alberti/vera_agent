@@ -2,40 +2,23 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from threading import RLock
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
 from uuid import uuid4
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain.memory import ConversationBufferWindowMemory
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.agents import create_agent
 
 from app.prompts import VERA_SYSTEM_PROMPT
+from app.services.agents.shared.context_memory import (
+    extract_last_ai_message,
+    extract_sources_line,
+    get_history,
+    store_turn,
+)
 from app.services.tools import (
     get_current_weather_tool,
     get_knowledge_base_tool,
     get_stock_price_tool,
 )
-
-
-_MEMORY_LOCK = RLock()
-_MEMORY_BY_ID: Dict[str, ConversationBufferWindowMemory] = {}
-_MEMORY_WINDOW = 6
-
-
-def _get_or_create_memory(conversation_id: str) -> ConversationBufferWindowMemory:
-    with _MEMORY_LOCK:
-        memory = _MEMORY_BY_ID.get(conversation_id)
-        if memory is None:
-            memory = ConversationBufferWindowMemory(
-                k=_MEMORY_WINDOW,
-                memory_key="chat_history",
-                return_messages=True,
-                input_key="input",
-                output_key="output",
-            )
-            _MEMORY_BY_ID[conversation_id] = memory
-        return memory
 
 
 @dataclass
@@ -50,7 +33,7 @@ class VeraAgent:
 
         if conversation_id is None or not conversation_id.strip():
             conversation_id = uuid4().hex
-        memory = _get_or_create_memory(conversation_id)
+        history = get_history(conversation_id)
 
         tools = [
             get_current_weather_tool(),
@@ -58,35 +41,21 @@ class VeraAgent:
             get_knowledge_base_tool(),
         ]
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", self.system_prompt),
-                MessagesPlaceholder("chat_history"),
-                ("user", "{input}"),
-                ("placeholder", "{agent_scratchpad}"),
-            ]
-        )
-
-        agent = create_tool_calling_agent(self.llm, tools, prompt)
-        executor = AgentExecutor(
-            agent=agent,
+        agent = create_agent(
+            model=self.llm,
             tools=tools,
-            memory=memory,
-            return_intermediate_steps=True,
+            system_prompt=self.system_prompt,
+            name=self.name,
         )
-        result = executor.invoke({"input": user_message})
-        output = result["output"]
+        messages = history + [{"role": "user", "content": user_message}]
+        result = agent.invoke({"messages": messages})
+        result_messages = result.get("messages", []) if isinstance(result, dict) else []
+        assistant_message = extract_last_ai_message(result_messages) or ""
+        output = assistant_message
 
-        sources_line = ""
-        for step in result.get("intermediate_steps", []):
-            if not step or len(step) < 2:
-                continue
-            _, observation = step
-            if isinstance(observation, dict) and observation.get("sources_line"):
-                sources_line = observation["sources_line"]
-                break
-
+        sources_line = extract_sources_line(result_messages)
         if sources_line:
             output = f"{output}\n\n{sources_line}"
 
+        store_turn(conversation_id, user_message, assistant_message)
         return output, conversation_id
