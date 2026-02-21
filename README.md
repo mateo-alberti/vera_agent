@@ -25,6 +25,27 @@ Key architectural choices:
 - `assets/`: static assets (if any).
 - `tests/`: test suite.
 
+## Docker
+Build the image:
+```bash
+docker build -t vera-agent .
+```
+
+Run the container (requires `OPENAI_API_KEY` and, optionally, `ALPHAVANTAGE_API_KEY`):
+```bash
+docker run --rm -p 8000:8000 \
+  -e OPENAI_API_KEY=your_key_here \
+  -e ALPHAVANTAGE_API_KEY=your_key_here \
+  -e CHROMA_PERSIST_DIR=/data/chroma \
+  -v vera_chroma:/data/chroma \
+  vera-agent
+```
+
+Alternatively, with Compose (reads `.env`):
+```bash
+docker compose up --build
+```
+
 ## Chroma DB ingestion scripts
 There is one ingestion script: `scripts/ingest_file.py`.
 

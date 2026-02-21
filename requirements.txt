@@ -1,7 +1,13 @@
 fastapi
 uvicorn[standard]
-langchain
-langchain-openai
+langchain==1.2.10
+langchain-core==1.2.13
+langchain-openai==1.1.9
+langchain-community==0.4.1
+langchain-chroma==1.1.0
+langchain-postgres==0.0.16
+langchain-text-splitters==1.1.0
+langchain-google-genai==3.0.0
 chromadb
 pypdf
 openai
